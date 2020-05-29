@@ -25,7 +25,13 @@ def Dice3d(a, b):
     # TASK: Write implementation of Dice3D. If you completed exercises in the lessons
     # you should already have it.
     # <YOUR CODE HERE>
-    overlap = sum([1 if (a[x, y, z] != 0 and b[x, y, z] != 0) else 0 for x in range(a.shape[0]) for y in range(a.shape[1]) for z in range(a.shape[2])])
+    overlap = 0
+    for i in range(a.shape[0]):
+        for j in range(a.shape[1]):
+            for j in range(a.shape[2]):
+                if (a[i, j, k] != 0 and b[i, j, k] != 0):
+                    overlap += 1
+
     vol = sum(np.ones(a[a != 0].shape)) + sum(np.ones(b[b != 0].shape))
 
     if vol == 0:
@@ -36,7 +42,7 @@ def Dice3d(a, b):
 def Jaccard3d(a, b):
     """
     This will compute the Jaccard Similarity coefficient for two 3-dimensional volumes
-    Volumes are expected to be of the same size. We are expecting binary masks - 
+    Volumes are expected to be of the same size. We are expecting binary masks -
     0's are treated as background and anything else is counted as data
 
     Arguments:
@@ -52,10 +58,21 @@ def Jaccard3d(a, b):
     if a.shape != b.shape:
         raise Exception(f"Expecting inputs of the same shape, got {a.shape} and {b.shape}")
 
-    # TASK: Write implementation of Jaccard similarity coefficient. Please do not use 
+    # TASK: Write implementation of Jaccard similarity coefficient. Please do not use
     # the Dice3D function from above to do the computation ;)
     # <YOUR CODE GOES HERE>
-    overlap = sum([1 if (a[x, y, z] != 0 and b[x, y, z] != 0) else 0 for x in range(a.shape[0]) for y in range(a.shape[1]) for z in range(a.shape[2])])
-    union = sum([1 if (a[x, y, z] != 0 or b[x, y, z] != 0) else 0 for x in range(a.shape[0]) for y in range(a.shape[1]) for z in range(a.shape[2])])
+    overlap = 0
+    for i in range(a.shape[0]):
+        for j in range(a.shape[1]):
+            for j in range(a.shape[2]):
+                if (a[i, j, k] != 0 and b[i, j, k] != 0):
+                    overlap += 1
 
-    return overlap/union
+    all_together = 0
+    for i in range(a.shape[0]):
+        for j in range(a.shape[1]):
+            for j in range(a.shape[2]):
+                if (a[i, j, k] != 0 or b[i, j, k] != 0):
+                    all_together += 1
+
+    return overlap/all_together

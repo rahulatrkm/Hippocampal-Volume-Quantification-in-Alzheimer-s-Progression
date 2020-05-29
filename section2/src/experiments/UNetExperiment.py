@@ -44,7 +44,7 @@ class UNetExperiment:
         os.makedirs(self.out_dir, exist_ok=True)
 
         # Create data loaders
-        # TASK: SlicesDataset class is not complete. Go to the file and complete it. 
+        # TASK: SlicesDataset class is not complete. Go to the file and complete it.
         # Note that we are using a 2D version of UNet here, which means that it will expect
         # batches of 2D slices.
         self.train_loader = DataLoader(SlicesDataset(dataset[split["train"]]),
@@ -61,14 +61,14 @@ class UNetExperiment:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # Configure our model and other training implements
-        # We will use a recursive UNet model from German Cancer Research Center, 
-        # Division of Medical Image Computing. It is quite complicated and works 
+        # We will use a recursive UNet model from German Cancer Research Center,
+        # Division of Medical Image Computing. It is quite complicated and works
         # very well on this task. Feel free to explore it or plug in your own model
         self.model = UNet(num_classes=3)
         self.model.to(self.device)
 
         # We are using a standard cross-entropy loss since the model output is essentially
-        # a tensor with softmax'd prediction of each pixel's probability of belonging 
+        # a tensor with softmax'd prediction of each pixel's probability of belonging
         # to a certain class
         self.loss_function = torch.nn.CrossEntropyLoss()
 
@@ -83,7 +83,7 @@ class UNetExperiment:
 
     def train(self):
         """
-        This method is executed once per epoch and takes 
+        This method is executed once per epoch and takes
         care of model weight update cycle
         """
         print(f"Training epoch {self.epoch}...")
@@ -93,10 +93,10 @@ class UNetExperiment:
         for i, batch in enumerate(self.train_loader):
             self.optimizer.zero_grad()
 
-            # TASK: You have your data in batch variable. Put the slices as 4D Torch Tensors of 
-            # shape [BATCH_SIZE, 1, PATCH_SIZE, PATCH_SIZE] into variables data and target. 
+            # TASK: You have your data in batch variable. Put the slices as 4D Torch Tensors of
+            # shape [BATCH_SIZE, 1, PATCH_SIZE, PATCH_SIZE] into variables data and target.
             # Feed data to the model and feed target to the loss function
-            # 
+            #
             data = batch['image']
             target = batch['seg']
 
@@ -120,7 +120,7 @@ class UNetExperiment:
 
                 counter = 100*self.epoch + 100*(i/len(self.train_loader))
 
-                # You don't need to do anything with this function, but you are welcome to 
+                # You don't need to do anything with this function, but you are welcome to
                 # check it out if you want to see how images are logged to Tensorboard
                 # or if you want to output additional debug data
                 log_to_tensorboard(
@@ -138,9 +138,9 @@ class UNetExperiment:
 
     def validate(self):
         """
-        This method runs validation cycle, using same metrics as 
+        This method runs validation cycle, using same metrics as
         Train method. Note that model needs to be switched to eval
-        mode and no_grad needs to be called so that gradients do not 
+        mode and no_grad needs to be called so that gradients do not
         propagate
         """
         print(f"Validating epoch {self.epoch}...")
@@ -151,14 +151,18 @@ class UNetExperiment:
 
         with torch.no_grad():
             for i, batch in enumerate(self.val_loader):
-                
+
                 # TASK: Write validation code that will compute loss on a validation sample
-                # <YOUR CODE HERE>
+                # I have kept this part similar to suggested training code (given in classroom)
                 data = batch['image']
                 target = batch['seg']
-                target = target.long()
-                prediction = self.model(data.to(self.device))
-                prediction_softmax = F.softmax(prediction, dim = 1)
+
+                prediction = self.model(data)
+
+                # We are also getting softmax'd version of prediction to output a probability map
+                # so that we can see how the model converges to the solution
+                prediction_softmax = F.softmax(prediction, dim=1)
+
                 loss = self.loss_function(prediction, target[:, 0, :, :].long().to(self.device))
                 print(f"Batch {i}. Data shape {data.shape} Loss {loss}")
 
@@ -172,7 +176,7 @@ class UNetExperiment:
             np.mean(loss_list),
             data,
             target,
-            prediction_softmax, 
+            prediction_softmax,
             prediction,
             (self.epoch+1) * 100)
         print(f"Validation complete")
@@ -212,8 +216,8 @@ class UNetExperiment:
 
         # In this method we will be computing metrics that are relevant to the task of 3D volume
         # segmentation. Therefore, unlike train and validation methods, we will do inferences
-        # on full 3D volumes, much like we will be doing it when we deploy the model in the 
-        # clinical environment. 
+        # on full 3D volumes, much like we will be doing it when we deploy the model in the
+        # clinical environment.
 
         # TASK: Inference Agent is not complete. Go and finish it. Feel free to test the class
         # in a module of your own by running it against one of the data samples
@@ -228,12 +232,12 @@ class UNetExperiment:
         for i, x in enumerate(self.test_data):
             pred_label = inference_agent.single_volume_inference(x["image"])
 
-            # We compute and report Dice and Jaccard similarity coefficients which 
+            # We compute and report Dice and Jaccard similarity coefficients which
             # assess how close our volumes are to each other
 
-            # TASK: Dice3D and Jaccard3D functions are not implemented. 
+            # TASK: Dice3D and Jaccard3D functions are not implemented.
             #  Complete the implementation as we discussed
-            # in one of the course lessons, you can look up definition of Jaccard index 
+            # in one of the course lessons, you can look up definition of Jaccard index
             # on Wikipedia. If you completed it
             # correctly (and if you picked your train/val/test split right ;)),
             # your average Jaccard on your test set should be around 0.80
@@ -244,7 +248,7 @@ class UNetExperiment:
             jc_list.append(jc)
 
             # STAND-OUT SUGGESTION: By way of exercise, consider also outputting:
-            # * Sensitivity and specificity (and explain semantic meaning in terms of 
+            # * Sensitivity and specificity (and explain semantic meaning in terms of
             #   under/over segmenting)
             # * Dice-per-slice and render combined slices with lowest and highest DpS
             # * Dice per class (anterior/posterior)

@@ -40,7 +40,8 @@ def LoadHippocampusData(root_dir, y_shape, z_shape):
 
         # TASK: normalize all images (but not labels) so that values are in [0..1] range
         # <YOUR CODE GOES HERE>
-        image = image/image.max()
+	max_pixel_value = image.max()
+        image = image/max_pixel_value
         # We need to reshape data since CNN tensors that represent minibatches
         # in our case will be stacks of slices and stacks need to be of the same size.
         # In the inference pathway we will need to crop the output to that
@@ -50,7 +51,8 @@ def LoadHippocampusData(root_dir, y_shape, z_shape):
 
         # TASK: med_reshape function is not complete. Go and fix it!
         image = med_reshape(image, new_shape=(image.shape[0], y_shape, z_shape))
-        label = med_reshape(label, new_shape=(label.shape[0], y_shape, z_shape)).astype(int)
+        label = med_reshape(label, new_shape=(label.shape[0], y_shape, z_shape))
+	label = label.astype(int)
 
         # TASK: Why do we need to cast label to int?
         # ANSWER: Because loss functions expects target value as int, and may give error if not found the same.
